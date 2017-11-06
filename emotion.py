@@ -1,5 +1,5 @@
 """
-	Program: ThaiTrend: Emoji v0.2 (Alpha test)
+	Program: ThaiTrend: Emoji v0.2.0 (Alpha test)
 	Release Date: 20 October 2017
 	Latest Update: 11 November 2017
 	Description: ThaiTrend: Emoji is a data analysis project which analyze Thai tweets
