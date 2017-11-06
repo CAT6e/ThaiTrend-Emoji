@@ -1,7 +1,7 @@
 """
-	Program: ThaiTrend: Emoji v0.2.0 (Alpha test)
+	Program: ThaiTrend: Emoji v0.2.2 (Alpha test)
 	Release Date: 20 October 2017
-	Latest Update: 11 November 2017
+	Latest Update: 5 November 2017
 	Description: ThaiTrend: Emoji is a data analysis project which analyze Thai tweets
 """
 
@@ -44,6 +44,7 @@ def emotion():
 	"😞":"รู้สึกผิดหวัง",
 	"😔":"รู้สึกผิดหวัง",
 	"😟":"รู้สึกเสียใจ",
+	"☹" : "รู้สึกเสียใจ",
 	"😕":"รู้สึกเสียใจ",
 	"🙁":"รู้สึกเสียใจ",
 	"😣":"รู้สึกโกรธ",
@@ -57,8 +58,8 @@ def emotion():
 	"😐":"pokerface",
 	"😑":"pokerface",
 	"😯":"รู้สึกประหลาดใจ",
-	"😦":"รู้สึกประหลาดใจ",
-	"😧":"รู้สึกประหลาดใจ",
+	"😦":"รู้สึกเสียใจ",
+	"😧":"รู้สึกเสียใจ",
 	"😮":"รู้สึกประหลาดใจ",
 	"😲":"รู้สึกประหลาดใจ",
 	"😵":"รู้สึกประหลาดใจ",
@@ -67,7 +68,7 @@ def emotion():
 	"😨":"รู้สึกประหลาดใจ",
 	"😰":"ป่วย",
 	"😢":"รู้สึกเสียใจ",
-	"😥":"รู้สึกผิดหวัง",
+	"😥":"รู้สึกเสียใจ",
 	"🤤":"รู้สึกหิว",
 	"😭":"รู้สึกเสียใจ",
 	"😓":"รู้สึกเสียใจ",
@@ -105,6 +106,7 @@ def emotion():
 	"👎":"รู้สึกชอบ",
 	"👌":"OK",
 	"🖕":"middlefinger",
+	"❤":"รู้สึกรัก",
 	"💛":"รู้สึกรัก",
 	"💚":"รู้สึกรัก",
 	"💙":"รู้สึกรัก",
@@ -121,11 +123,11 @@ def emotion():
 	return emotion_mapping
 
 
-def loopfiles(daystart, dayend, monthstart, monthend, year):
+def loopfiles(monthstart, monthend, year):
 	""" Loop filename """
 	files = list()
 	for month in range(monthstart, monthend+1):
-		for day in range(daystart, dayend+1):
+		for day in range(1, 32):
 			files.append("data/%04d-%02d-%02d.log" % (year, month, day))
 	return files
 
@@ -147,16 +149,28 @@ def emoji_usage(char, emoji):
 def main():
 	""" The program starts here. """
 
-	thai_tweets_from_2016 = loopfiles(1, 31, 3, 12, 2016) #loop 2016 filename
-	for i in loopfiles(1, 31, 1, 10, 2017):
-		thai_tweets_from_2016.append(i) #add 2017 filename
+	#Get filename of certain time
 
-	oct2016 = loopfiles(1, 31, 10, 10, 2016)
-	oct2017 = loopfiles(1, 31, 10, 10, 2016)
+	thai_tweets_from_2016 = loopfiles(3, 12, 2016) #loop filename from 2016-03-01.log to 2017-10-31.log
+	for i in loopfiles(1, 10, 2017):
+		thai_tweets_from_2016.append(i)
 
+	jan2017 = loopfiles(1, 1, 2017)
+	feb2017 = loopfiles(2, 2, 2017)
+	apr2017 = loopfiles(4, 4, 2017)
+
+	oct2016 = loopfiles(10, 10, 2016)
+	oct2017 = loopfiles(10, 10, 2017)
+
+	#Analyze the most used emoji and typing behavior from 2016-03-01 to 2017-10-31
 	analyze(thai_tweets_from_2016, "usage behavior", "total")
-	analyze(oct2016, "emotion", "oct2016")
-	analyze(oct2017, "emotion", "oct2016")
+
+	analyze(jan2017, "usage", "jan2017") #Analyze the most used emoji in January 2017 (New Year's festival analyze)
+	analyze(feb2017, "usage", "feb2017") #Analyze the most used emoji in February 2017 (Valentine's festival analyze)
+	analyze(apr2017, "usage", "apr2017") #Analyze the most used emoji in April 2017 (songkarn's festival analyze)
+
+	analyze(oct2016, "emotion", "oct2016") #Analyze thai emotion in October 2016
+	analyze(oct2017, "emotion", "oct2017") #Analyze thai emotion in October 2017
 
 
 def analyze(filename, options, export_name):
@@ -164,11 +178,12 @@ def analyze(filename, options, export_name):
 	Analyze tweet by input the list of filename and options, seperated by space:
 		Filename:
 			Use loopfiles() to get list filename
+
 		Options:
 			usage - to get the most used emoji**
 			behavior - to get typing behavior
-			emotion - to get the most used emoji categorized by emotion**
-			** These selected options can't be used at the same time in this version
+			emotion - to get the most used emoji categorized by emotion
+
 		Export name:
 			Program will export dictionary in "export_name-options.pkl" format.
 			Example:
