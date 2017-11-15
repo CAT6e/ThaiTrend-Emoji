@@ -170,8 +170,9 @@ def emoji_usage(emoji_list, output_dict):
 
 def typing_behavior(emoji_list, output_dict):
 	""" Record typing behavior """
+	emoji_list.append(" ")
 	repeated = 1
-	for position in range(len(emoji_list)):
+	for position in range(len(emoji_list)-1):
 		start = emoji_list[position]
 		nexts = emoji_list[position+1]
 		if start == nexts:
