@@ -1,15 +1,41 @@
 """
-	Program: ThaiTrend: Emoji v0.2.2 (Alpha test)
-	Release Date: 20 October 2017
-	Latest Update: 5 November 2017
+	Program: ThaiTrend: Emoji
+	Latest Update: 15 November 2017
 	Description: ThaiTrend: Emoji is a data analysis project which analyze Thai tweets
 """
 
 import pickle
+import emoji
+
+def time_picker(monthstart, yearstart, monthend, yearend):
+	""" Get the certain period of time """
+	files = list()
+
+	if yearstart < yearend:
+		for month in range(monthstart, 13):
+			for day in range(1, 32):
+				files.append("2016-%02d-%02d" % (month, day))
+		for month in range(1, monthend+1):
+			for day in range(1, 32):
+				files.append("2017-%02d-%02d" % (month, day))
+	else:
+		for month in range(monthstart, monthend+1):
+			for day in range(1, 32):
+				files.append("%04d-%02d-%02d" % (yearstart, month, day))
+
+	return files
 
 
-def emotion():
-	""" Get emotion from emoji """
+def export_dict(dictionary, url):
+	""" Export processed data to pickle file """
+	pickle.dump(dictionary, open(url, "wb"))
+
+
+def emotion(emoji_list, output_dict):
+	""" Get emotion from emoji
+		map emotion ใหม่ให้เหลือแค่ "มีความสุข" กับ "ไม่มีความสุข"
+		อีโมจิที่ไม่เข้าทั้งสองกลุ่มนี้ลบออกได้เลย
+	"""
 	emotion_mapping = {"😀":"มีความสุข",
 	"😃":"มีความสุข",
 	"😄":"มีความสุข",
@@ -120,178 +146,158 @@ def emotion():
 	"💘":"รู้สึกรัก",
 	"💝":"รู้สึกรัก",
 	"💟":"รู้สึกรัก"}
-	return emotion_mapping
+
+	for emo in emoji_list:
+		if emo in emotion_mapping:
+			feeling = emotion_mapping[emo]
+			if feeling not in output_dict:
+				output_dict[feeling] = 1
+			else:
+				output_dict[feeling] += 1
+
+	return output_dict
 
 
-def loopfiles(monthstart, monthend, year):
-	""" Loop filename """
-	files = list()
-	for month in range(monthstart, monthend+1):
-		for day in range(1, 32):
-			files.append("data/%04d-%02d-%02d.log" % (year, month, day))
-	return files
-
-
-def export_dict(dictionary, url):
-	""" Export processed data to pickle file """
-	pickle.dump(dictionary, open(url, "wb"))
-
-
-def emoji_usage(char, emoji):
+def emoji_usage(emoji_list, output_dict):
 	""" Record emoji usage """
-	if char not in emoji:
-		emoji[char] = 1
+	for emo in emoji_list:
+		if emo not in output_dict:
+			output_dict[emo] = 1
+		else:
+			output_dict[emo] += 1
+		return output_dict
+
+
+def typing_behavior(emoji_list, output_dict):
+	""" Record typing behavior """
+	repeated = 1
+	for position in range(len(emoji_list)):
+		start = emoji_list[position]
+		nexts = emoji_list[position+1]
+		if start == nexts:
+			repeated += 1
+		else:
+			if repeated > 3:
+				repeated = 3
+			if start not in output_dict:
+				output_dict[start] = {}
+				output_dict[start][1] = 0
+				output_dict[start][2] = 0
+				output_dict[start][3] = 0
+			output_dict[start][repeated] += 1
+			repeated = 1
+	return output_dict
+
+
+def zip_monthly(subdir, month, year):
+	"""
+		Merge daily dictionaries into monthly dictionaries.
+		[option]
+			subdir: Identify dict type; usage, behavior or emotion
+			month: Your target month
+			year: Your target year
+	"""
+
+	files = []
+	monthly_dict = {}
+
+	if isinstance(subdir, list):
+		for month in range(1, 13):
+			files.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[0], year, month, day, subdir))
+			files.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[1], year, month, day, subdir))
+			files.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[2], year, month, day, subdir))
 	else:
-		emoji[char] += 1
-	return emoji
+		for day in range(1, 32):
+			files.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir, year, month, day, subdir))
+
+	for filename in files:
+	    with open(filename, 'rb') as f:
+	        data = pickle.load(f)
+	        monthly_dict.update(data)
+
+	export_dict(monthly_dict, "dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir, year, month, subdir))
 
 
-def main():
-	""" The program starts here. """
-
-	#Get filename of certain time
-
-	thai_tweets_from_2016 = loopfiles(3, 12, 2016) #loop filename from 2016-03-01.log to 2017-10-31.log
-	for i in loopfiles(1, 10, 2017):
-		thai_tweets_from_2016.append(i)
-
-	jan2017 = loopfiles(1, 1, 2017)
-	feb2017 = loopfiles(2, 2, 2017)
-	apr2017 = loopfiles(4, 4, 2017)
-
-	oct2016 = loopfiles(10, 10, 2016)
-	oct2017 = loopfiles(10, 10, 2017)
-
-	#Analyze the most used emoji and typing behavior from 2016-03-01 to 2017-10-31
-	analyze(thai_tweets_from_2016, "usage behavior", "total")
-
-	analyze(jan2017, "usage", "jan2017") #Analyze the most used emoji in January 2017 (New Year's festival analyze)
-	analyze(feb2017, "usage", "feb2017") #Analyze the most used emoji in February 2017 (Valentine's festival analyze)
-	analyze(apr2017, "usage", "apr2017") #Analyze the most used emoji in April 2017 (songkarn's festival analyze)
-
-	analyze(oct2016, "emotion", "oct2016") #Analyze thai emotion in October 2016
-	analyze(oct2017, "emotion", "oct2017") #Analyze thai emotion in October 2017
-
-
-def analyze(filename, options, export_name):
+def zip_annually(subdir, year):
 	"""
-	Analyze tweet by input the list of filename and options, seperated by space:
-		Filename:
-			Use loopfiles() to get list filename
-
-		Options:
-			usage - to get the most used emoji**
-			behavior - to get typing behavior
-			emotion - to get the most used emoji categorized by emotion
-
-		Export name:
-			Program will export dictionary in "export_name-options.pkl" format.
-			Example:
-				if export_name = 2017 and options = usage
-				Your file is "2017-usage.pkl"
+		Merge monthly dictionaries into annually dictionary, monthly dictionaries is required
+		[option]
+			subdir: Identify dict type; usage, behavior or emotion
+			year: Your target year
 	"""
-	get_usage = False
-	get_behavior = False
-	get_emotion = False
 
-	option = options.split(" ")
-	if "usage" in option:
-		get_usage = True
-		emoji = dict()
+	files = []
+	annually_dict = {}
 
-	if "behavior" in option:
-		get_behavior = True
-		behavior = dict()
+	if isinstance(subdir, list):
+		for month in range(1, 13):
+			files.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[0], year, month, subdir))
+			files.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[1], year, month, subdir))
+			files.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[2], year, month, subdir))
+	else:
+		for month in range(1, 13):
+			files.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir, year, month, subdir))
 
-	if "emotion" in option:
-		get_emotion = True
-		emo = dict()
-		emotion_mapping = emotion()
+	for filename in files:
+	    with open(filename, 'rb') as f:
+	        data = pickle.load(f)
+	        annually_dict.update(data)
+
+	export_dict(annually_dict, "dictionary/%s/annually/%04d-%02d-%s.pkl" % (subdir, year, month, subdir))
+
+
+def analyze(filename):
+	"""
+		Analyze tweet by input the list of filename, use time_picker() to select time.
+	"""
+
+	usage = {}
+	behavior = {}
 
 	day_count = 0
 	for data in filename:
 		day_count += 1
-		with open(data, "r", encoding="utf8", errors='ignore') as tweet:
+		daily_tweet = "data/"+data+".log"
+		with open(daily_tweet, "r", encoding="utf8", errors='ignore') as tweet:
 			line = tweet.readline()
-			if get_emotion:
-				emoji_per_day = dict()
+			emoji_per_day = dict()
 
 			while line:
-				if get_behavior:
-					previous_emoji = False
-					repeated = 1
 
-				for char in line:
-					if ord(char) >= 127744 and ord(char) <= 129355:
-						if get_usage:
-							emoji_usage(char, emoji)
+				emoji_found = [emo for emo in line if emo in emoji.UNICODE_EMOJI]
 
-						if get_emotion and char in emotion_mapping:
-							feeling = emotion_mapping[char]
-							if feeling not in emoji_per_day:
-								emoji_per_day[feeling] = 1
-							else:
-								emoji_per_day[feeling] += 1
-
-						if get_behavior:
-							if previous_emoji != char:
-								if previous_emoji:
-									if repeated > 3:
-										repeated = 3
-									if previous_emoji not in behavior:
-										behavior[previous_emoji] = {}
-										behavior[previous_emoji][1] = 0
-										behavior[previous_emoji][2] = 0
-										behavior[previous_emoji][3] = 0
-									behavior[previous_emoji][repeated] += 1
-								previous_emoji = char
-								repeated = 1
-							else:
-								repeated += 1
-
-				if get_behavior:
-					if previous_emoji:
-						if repeated > 3:
-							repeated = 3
-						if previous_emoji not in behavior:
-							behavior[previous_emoji] = {}
-							behavior[previous_emoji][1] = 0
-							behavior[previous_emoji][2] = 0
-							behavior[previous_emoji][3] = 0
-						behavior[previous_emoji][repeated] += 1
+				#get_usage
+				emoji_usage(emoji_found, usage)
+				get_emotion
+				emotion(emoji_found, emoji_per_day)
+				get_behavior
+				typing_behavior(emoji_found, behavior)
 
 				line = tweet.readline()
 
-		if get_emotion:
-			total_emoji_in_one_day = sum(emoji_per_day.values())
-			maximum_emoji = max(emoji_per_day, key=emoji_per_day.get)
-			maximum_value = emoji_per_day[maximum_emoji]
+		#get_emotion
+		total_emoji_in_one_day = sum(emoji_per_day.values())
+		maximum_emoji = max(emoji_per_day, key=emoji_per_day.get)
+		maximum_value = emoji_per_day[maximum_emoji]
+		percentage = (maximum_value/total_emoji_in_one_day)*100
 
-			percentage = (maximum_value/total_emoji_in_one_day)*100
+		emo[day_count] = {maximum_emoji:maximum_value}
 
-			emo[day_count] = {maximum_emoji:maximum_value}
-
-	#months = { 1: "JAN",
-	#2: "FEB",
-	#3: "MAR",
-	#4: "APR",
-	#5: "MAY",
-	#6: "JUN",
-	#7: "JUL",
-	#8: "AUG",
-	#9: "SEP",
-	#10: "OCT",
-	#11: "NOV",
-	#12: "DEC",
-	#}
+		export_dict(usage, "dictionary/usage/daily/%s-usage.pkl" % data)
+		export_dict(behavior, "dictionary/behavior/daily/%s-behavior.pkl" % export_name)
+		export_dict(emo, "dictionary/emotion/daily/%s-emotion.pkl" % export_name)
 
 
-	if get_usage:
-		export_dict(emoji, "dictionary/%s-usage.pkl" % export_name)
-	if get_behavior:
-		export_dict(behavior, "dictionary/%s-behavior.pkl" % export_name)
-	if get_emotion:
-		export_dict(emo, "dictionary/%s-emotion.pkl" % export_name)
+def main():
+	""" The program starts here. """
+	analyze(time_picker(3, 2016, 10, 2017))
 
+	for month in range(3, 13):
+		zip_monthly("[usage, behavior, emotion]", month, 2016)
+	for month in range(1, 11):
+		zip_monthly("[usage, behavior, emotion]", month, 2017)
+
+	zip_annually("[usage, behavior, emotion]", 2016)
+	zip_annually("[usage, behavior, emotion]", 2017)
 
 main()

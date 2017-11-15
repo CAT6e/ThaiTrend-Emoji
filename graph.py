@@ -1,7 +1,6 @@
 """
-    Program: ThaiTrend: Emoji v0.3.0 (Alpha test)
-    Release Date: 20 October 2017
-    Latest Update: 11 November 2017
+    Program: ThaiTrend: Emoji
+    Latest Update: 15 November 2017
     Description: This program visualizes dictionary into graph
 """
 
@@ -25,21 +24,12 @@ def get_percent(values):
         percent.append((value/maximum)*100)
     return percent
 
-def get_behavior():
-    """ Get typing behavior usage, total usage is needed """
-    x_axis, y_axis = get_value("total-usage.pkl", 10)
-    behavior = []
-    with open("dictionary/total-behavior.pkl", 'rb') as f:
-        data = pickle.load(f)
-        for emo in x_axis:
-            behavior.append(data.get(emo))
 
-
-def get_value(dictionary, limit):
+def get_data(dictionary, limit):
     """ Get value from dictionary """
     x_axis = []
     y_axis = []
-    filename = "dictionary/%s" % dictionary
+    filename = "dictionary/usage/daily/%s" % dictionary
 
     with open(filename, 'rb') as f:
         data = pickle.load(f)
@@ -52,9 +42,19 @@ def get_value(dictionary, limit):
                 count += 1
         return x_axis, y_axis
 
-def visualizes_bar(dictionary, total):
-    """ Visualizes data into bar chart """
-    x_axis, y_axis = get_value(dictionary, total)
+def visualizes_usage(year, month, day):
+    """
+        Visualizes top 10 emojis into bar chart.
+        [options]
+            If you want to visualize total top emojis => ("2016-2017", False, False)
+            If you want to visualize top emojis in one year => (2016 or 2017, False, False)
+            If you want to visualize top emojis in one month => (2016 or 2017, 1 -> 12, False)
+            If you want to visualize top emojis in one day => (2016 or 2017, 1 -> 12, 1 -> 31)
+        [developer note]
+            This function is being developed and not be able to call in v0.4.0
+    """
+
+    x_axis, y_axis = get_data(dictionary, total)
 
     x_pos = np.arange(total)
     fig, ax = plt.subplots()
@@ -73,10 +73,19 @@ def visualizes_bar(dictionary, total):
 
     plt.show()
 
-def visualizes_stacked():
-    """ Visualizes data into stacked bar chart """
+def visualizes_behavior(year, month, day):
+    """
+        Visualizes typing behavior into 100percent stacked bar chart.
+        [options]
+            If you want to visualize total typing behavior => ("2016-2017", False, False)
+            If you want to visualize typing behavior in one year => (2016 or 2017, False, False)
+            If you want to visualize typing behavior in one month => (2016 or 2017, 1 -> 12, False)
+            If you want to visualize typing behavior in one day => (2016 or 2017, 1 -> 12, 1 -> 31)
+        [developer note]
+            This function is being developed and not be able to call in v0.4.0
+    """
 
-    x_axis, y_axis = get_value("total-usage.pkl", 10)
+    x_axis, y_axis = get_data("total-usage.pkl", 10)
 
     behavior_1 = []
     behavior_2 = []
@@ -111,10 +120,22 @@ def visualizes_stacked():
 
     plt.show()
 
+def happiness_index():
+    """
+        Visualizes happiness index
+        [options]
+            If you want to visualize total happiness index => ("2016-2017", False, False)
+            If you want to visualize happiness index in one year => (2016 or 2017, False, False)
+            If you want to visualize happiness index in one month => (2016 or 2017, 1 -> 12, False)
+            If you want to visualize happiness index in one day => (2016 or 2017, 1 -> 12, 1 -> 31)
+        [developer note]
+            This function is being developed and not be able to call in v0.4.0
+    """
+    #Nothing here
+
 
 def main():
     """ Program start here """
-    visualizes_bar("total-usage.pkl", 10)
-    visualizes_stacked()
+    #Nothing here
 
 main()
