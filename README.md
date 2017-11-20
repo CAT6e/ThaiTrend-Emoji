@@ -13,7 +13,7 @@ We analyze emoji using in Thai tweets in 3 ways:
 ## Data
   We use tweets in Thai from 1 March 2016 to 31 October 2017
 
-##Library and modules
+## Library and modules
  - numpy
  - matplotlip
  - emoji
@@ -27,9 +27,9 @@ Emoji usage, behavior and emotion are analyzed daily and stored in python dictio
   3. Happiness index from 2016 to 2017.
   4. Happiness index in October 2016 and October 2017.
   5. Emoji usage in Festival's Day.
-    - January 2017 (New Year's Day)
-    - February 2017 (Valentine's Day)
-    - April 2017 (Song Karn's Day)
+    5.1 January 2017 (New Year's Day)
+    5.2 February 2017 (Valentine's Day)
+    5.3 April 2017 (Song Karn's Day)
 
 ## Result
 See an awesome result here!
