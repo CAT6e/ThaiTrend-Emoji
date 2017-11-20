@@ -31,10 +31,9 @@ def export_dict(dictionary, url):
 	pickle.dump(dictionary, open(url, "wb"))
 
 
-def emotion(emoji_list, output_dict):
-	""" Get emotion from emoji
-		map emotion ใหม่ให้เหลือแค่ "มีความสุข" กับ "ไม่มีความสุข"
-		อีโมจิที่ไม่เข้าทั้งสองกลุ่มนี้ลบออกได้เลย
+def emotion(input_list, output_dict):
+	"""
+		Get emotion from emoji
 	"""
 	emotion_mapping = {"😀":"มีความสุข",
 	"😃":"มีความสุข",
@@ -59,13 +58,11 @@ def emotion(emoji_list, output_dict):
 	"😜":"มีความสุข",
 	"😝":"มีความสุข",
 	"😛":"มีความสุข",
-	"🤑":"ไม่มีความสุข",
 	"🤗":"มีความสุข",
 	"🤓":"มีความสุข",
 	"😎":"มีความสุข",
 	"🤡":"มีความสุข",
 	"🤠":"มีความสุข",
-	"😏":"ไม่มีความสุข",
 	"😒":"ไม่มีความสุข",
 	"😞":"ไม่มีความสุข",
 	"😔":"ไม่มีความสุข",
@@ -80,7 +77,6 @@ def emotion(emoji_list, output_dict):
 	"😤":"ไม่มีความสุข",
 	"😠":"ไม่มีความสุข",
 	"😡":"ไม่มีความสุข",
-	"😶":"ไม่มีความสุข",
 	"😐":"ไม่มีความสุข",
 	"😑":"ไม่มีความสุข",
 	"😯":"ไม่มีความสุข",
@@ -100,11 +96,8 @@ def emotion(emoji_list, output_dict):
 	"😓":"ไม่มีความสุข",
 	"😪":"ไม่มีความสุข",
 	"😴":"ไม่มีความสุข",
-	"🙄":"ไม่มีความสุข",
-	"🤔":"ไม่มีความสุข",
 	"🤥":"ไม่มีความสุข",
-	"😬":"ไม่มีความสุข",
-	"🤐":"ไม่มีความสุข",
+	"😬":"มีความสุข",
 	"🤢":"ไม่มีความสุข",
 	"🤧":"ไม่มีความสุข",
 	"😷":"ไม่มีความสุข",
@@ -121,18 +114,14 @@ def emotion(emoji_list, output_dict):
 	"😻":"มีความสุข",
 	"😼":"มีความสุข",
 	"😽":"มีความสุข",
-	"🙀":"ไม่มีความสุข",
+	"🙀":"มีความสุข",
 	"😿":"ไม่มีความสุข",
 	"😾":"ไม่มีความสุข",
-	"👐":"มีความสุข",
-	"🙌":"มีความสุข",
 	"👏":"มีความสุข",
-	"🙏":"มีความสุข",
 	"👍":"มีความสุข",
 	"👎":"ไม่มีความสุข",
-	"👌":"มีความสุข",
 	"🖕":"ไม่มีความสุข",
-	"❤":"ไม่มีความสุข",
+	"❤":"มีความสุข",
 	"💛":"มีความสุข",
 	"💚":"มีความสุข",
 	"💙":"มีความสุข",
@@ -147,7 +136,7 @@ def emotion(emoji_list, output_dict):
 	"💝":"มีความสุข",
 	"💟":"มีความสุข"}
 
-	for emo in emoji_list:
+	for emo in input_list:
 		if emo in emotion_mapping:
 			feeling = emotion_mapping[emo]
 			if feeling not in output_dict:
@@ -199,24 +188,62 @@ def zip_monthly(subdir, month, year):
 			year: Your target year
 	"""
 
-	files = []
-	monthly_dict = {}
-
 	if isinstance(subdir, list):
-		for month in range(1, 13):
-			files.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[0], year, month, day, subdir))
-			files.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[1], year, month, day, subdir))
-			files.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[2], year, month, day, subdir))
-	else:
+		files1, files2, files3 = [], [], []
+		dict1, dict2, dict3 = {}, {}, {}
 		for day in range(1, 32):
-			files.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir, year, month, day, subdir))
+			files1.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[0], year, month, day, subdir[0]))
+			files2.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[1], year, month, day, subdir[1]))
+			files3.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir[2], year, month, day, subdir[2]))
+				
+		for filename in files1:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict1:
+						dict1[element] = data[element]
+					else:
+						dict1[element] += data[element]
 
-	for filename in files:
-	    with open(filename, 'rb') as f:
-	        data = pickle.load(f)
-	        monthly_dict.update(data)
+		for filename in files2:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict2:
+						dict2[element] = data[element]
+					else:
+						for sub_element in dict2[element]:
+							dict2[element][sub_element] += data[element][sub_element]
 
-	export_dict(monthly_dict, "dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir, year, month, subdir))
+		for filename in files3:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict3:
+						dict3[element] = data[element]
+					else:
+						dict3[element] += data[element]
+
+		export_dict(dict1, "dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[0], year, month, subdir[0]))
+		export_dict(dict2, "dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[1], year, month, subdir[1]))
+		export_dict(dict3, "dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[2], year, month, subdir[2]))
+	
+	else:
+		files1 = []
+		dict1 = {}
+		for day in range(1, 32):
+			files1.append("dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir, year, month, day, subdir))
+
+		for filename in files1:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict1:
+						dict1[element] = data[element]
+					else:
+						dict1[element] += 1
+
+		export_dict(dict1, "dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir, year, month, subdir))
 
 
 def zip_annually(subdir, year):
@@ -227,24 +254,130 @@ def zip_annually(subdir, year):
 			year: Your target year
 	"""
 
-	files = []
-	annually_dict = {}
+	if year == 2016:
+		start = 3
+		stop = 13
+	else:
+		start = 1
+		stop = 11
 
 	if isinstance(subdir, list):
-		for month in range(1, 13):
-			files.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[0], year, month, subdir))
-			files.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[1], year, month, subdir))
-			files.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[2], year, month, subdir))
+		files1, files2, files3 = [], [], []
+		dict1, dict2, dict3 = {}, {}, {}
+
+		for month in range(start, stop):
+			files1.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[0], year, month, subdir[0]))
+			files2.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[1], year, month, subdir[1]))
+			files3.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir[2], year, month, subdir[2]))
+		
+		for filename in files1:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict1:
+						dict1[element] = data[element]
+					else:
+						dict1[element] += data[element]
+		for filename in files2:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict2:
+						dict2[element] = data[element]
+					else:
+						for sub_element in dict2[element]:
+							dict2[element][sub_element] += data[element][sub_element]
+		for filename in files3:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict3:
+						dict3[element] = data[element]
+					else:
+						dict3[element] += data[element]
+		export_dict(dict1, "dictionary/%s/annually/%04d-%s.pkl" % (subdir[0], year, subdir[0]))
+		export_dict(dict2, "dictionary/%s/annually/%04d-%s.pkl" % (subdir[1], year, subdir[1]))
+		export_dict(dict3, "dictionary/%s/annually/%04d-%s.pkl" % (subdir[2], year, subdir[2]))
+	
 	else:
-		for month in range(1, 13):
-			files.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir, year, month, subdir))
+		files1 = []
+		dict1 = {}
+		for month in range(start, stop):
+			files1.append("dictionary/%s/monthly/%04d-%02d-%s.pkl" % (subdir, year, month, subdir))
 
-	for filename in files:
-	    with open(filename, 'rb') as f:
-	        data = pickle.load(f)
-	        annually_dict.update(data)
+		for filename in files1:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict1:
+						dict1[element] = data[element]
+					else:
+						dict1[element] += data[element]
 
-	export_dict(annually_dict, "dictionary/%s/annually/%04d-%02d-%s.pkl" % (subdir, year, month, subdir))
+		export_dict(dict1, "dictionary/%s/annually/%04d-%s.pkl" % (subdir, year, subdir))
+
+
+def zip_total(subdir):
+	"""
+		Merge annually dictionaries to get total dictionaries, annually dictionaries is required
+		[option]
+			subdir: Identify dict type; usage, behavior or emotion
+	"""
+
+	if isinstance(subdir, list):
+		files1, files2, files3 = [], [], []
+		dict1, dict2, dict3 = {}, {}, {}
+		for year in range(2016, 2018):
+			files1.append("dictionary/%s/annually/%04d-%s.pkl" % (subdir[0], year, subdir[0]))
+			files2.append("dictionary/%s/annually/%04d-%s.pkl" % (subdir[1], year, subdir[1]))
+			files3.append("dictionary/%s/annually/%04d-%s.pkl" % (subdir[2], year, subdir[2]))
+
+		for filename in files1:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict1:
+						dict1[element] = data[element]
+					else:
+						dict1[element] += data[element]
+		export_dict(dict1, "dictionary/total-%s.pkl" % (subdir[0]))
+
+		for filename in files2:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict2:
+						dict2[element] = data[element]
+					else:
+						for sub_element in dict2[element]:
+							dict2[element][sub_element] += data[element][sub_element]
+		export_dict(dict2, "dictionary/total-%s.pkl" % (subdir[1]))
+
+		for filename in files3:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict3:
+						dict3[element] = data[element]
+					else:
+						dict3[element] += data[element]
+		export_dict(dict3, "dictionary/total-%s.pkl" % (subdir[2]))
+	
+	else:
+		files1 = []
+		dict1 = {}
+		for year in range(2016, 2018):
+			files1.append("dictionary/%s/annually/%04d-%s.pkl" % (subdir, year, subdir))
+
+		for filename in files1:
+			with open(filename, 'rb') as f:
+				data = pickle.load(f)
+				for element in data:
+					if element not in dict1:
+						dict1[element] = data[element]
+					else:
+						dict1[element] += data[element]
+		export_dict(dict1, "dictionary/total-%s.pkl" % (subdir))
 
 
 def analyze(filename):
@@ -254,6 +387,7 @@ def analyze(filename):
 
 	usage = {}
 	behavior = {}
+	happiness = {}
 
 	day_count = 0
 	for data in filename:
@@ -261,7 +395,6 @@ def analyze(filename):
 		daily_tweet = "data/"+data+".log"
 		with open(daily_tweet, "r", encoding="utf8", errors='ignore') as tweet:
 			line = tweet.readline()
-			emoji_per_day = dict()
 
 			while line:
 
@@ -269,36 +402,32 @@ def analyze(filename):
 
 				#get_usage
 				emoji_usage(emoji_found, usage)
-				get_emotion
-				emotion(emoji_found, emoji_per_day)
-				get_behavior
+				#get_emotion
+				emotion(emoji_found, happiness)
+				#get_behavior
 				typing_behavior(emoji_found, behavior)
 
 				line = tweet.readline()
 
-		#get_emotion
-		total_emoji_in_one_day = sum(emoji_per_day.values())
-		maximum_emoji = max(emoji_per_day, key=emoji_per_day.get)
-		maximum_value = emoji_per_day[maximum_emoji]
-		percentage = (maximum_value/total_emoji_in_one_day)*100
-
-		emo[day_count] = {maximum_emoji:maximum_value}
-
 		export_dict(usage, "dictionary/usage/daily/%s-usage.pkl" % data)
-		export_dict(behavior, "dictionary/behavior/daily/%s-behavior.pkl" % export_name)
-		export_dict(emo, "dictionary/emotion/daily/%s-emotion.pkl" % export_name)
+		export_dict(behavior, "dictionary/behavior/daily/%s-behavior.pkl" % data)
+		export_dict(happiness, "dictionary/emotion/daily/%s-emotion.pkl" % data)
 
 
 def main():
 	""" The program starts here. """
-	analyze(time_picker(3, 2016, 10, 2017))
+
+	#analyze(time_picker(3, 2016, 10, 2017))
+
 
 	for month in range(3, 13):
-		zip_monthly("[usage, behavior, emotion]", month, 2016)
+		zip_monthly(["usage", "behavior", "emotion"], month, 2016)
 	for month in range(1, 11):
-		zip_monthly("[usage, behavior, emotion]", month, 2017)
+		zip_monthly(["usage", "behavior", "emotion"], month, 2017)
 
-	zip_annually("[usage, behavior, emotion]", 2016)
-	zip_annually("[usage, behavior, emotion]", 2017)
+	zip_annually(["usage", "behavior", "emotion"], 2016)
+	zip_annually(["usage", "behavior", "emotion"], 2017)
+
+	zip_total(["usage", "behavior", "emotion"])
 
 main()
