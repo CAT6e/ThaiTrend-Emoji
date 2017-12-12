@@ -417,7 +417,7 @@ def analyze(filename):
 def main():
 	""" The program starts here. """
 
-	#analyze(time_picker(3, 2016, 10, 2017))
+	analyze(time_picker(3, 2016, 10, 2017))
 
 
 	for month in range(3, 13):
