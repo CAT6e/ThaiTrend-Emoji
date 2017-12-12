@@ -1,7 +1,7 @@
 """
 	Program: ThaiTrend: Emoji
-	Latest Update: 15 November 2017
 	Description: ThaiTrend: Emoji is a data analysis project which analyze Thai tweets
+	Latest Update: 12 December 2017 (v1.0)
 """
 
 import pickle
