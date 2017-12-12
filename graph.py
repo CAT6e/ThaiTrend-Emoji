@@ -114,9 +114,6 @@ def visualizes_usage(year, month, day, total):
     plt.ylabel('Frequency (Million Times)')
     plt.title(title)
     plt.xticks(x_pos, x_axis)
-    #plt.savefig('foo.png', bbox_inches='tight')
-
-    #plt.show()
 
     return x_axis, year, month, day, total
 
@@ -237,16 +234,10 @@ def main():
     visualizes_usage(2017, False, False, 10)                    #Get 2017 usage graph
     visualizes_usage(2016, False, False, 10)                    #Get 2016 usage graph
 
-    visualizes_usage(2017, 1, False, 10)                        #Get Jan 2017 usage graph
     visualizes_usage(2017, 1, 1, 10)                            #Get 1 jan 2017 usage graph
-
-    visualizes_usage(2017, 2, False, 10)                        #Get Feb 2017 usage graph
     visualizes_usage(2017, 2, 14, 10)                           #Get 14 feb 2017 usage graph
-
-    visualizes_usage(2017, 4, False, 10)                        #Get Apr 2017 usage graph
     visualizes_usage(2017, 4, 13, 10)                           #Get 13 apr 2017 usage graph
-
-    visualizes_usage(2016, 10, 13, 10)                        #Get Jan 2017 usage graph
+    visualizes_usage(2017, 10, False, 10)                       #Get oct 2017 usage graph
 
     happiness_index(2017, False)                                #Get happiness index graph in 2017
     happiness_index(2016, False)                                #Get happiness index graph in 2016
