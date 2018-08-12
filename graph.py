@@ -1,7 +1,7 @@
 """
-    Program: ThaiTrend: Emoji
-    Latest Update: 20 November 2017
-    Description: This program visualizes dictionary into graph
+Program: ThaiTrend: Emoji
+Version: 1.1 (12 August 2018)
+GitHub: https://github.com/CAT6e/ThaiTrend-Emoji
 """
 
 import pickle
@@ -25,7 +25,7 @@ def get_percent(values):
     return percent
 
 
-def get_data(dictionary, limit):
+def get_data(dictionary, limit, scale=1000000):
     """ Get value from dictionary """
     x_axis = []
     y_axis = []
@@ -38,11 +38,11 @@ def get_data(dictionary, limit):
             if limit:
                 if count < limit:
                     x_axis.append(key)
-                    y_axis.append(value/1000000)
+                    y_axis.append(value/scale)
                     count += 1
             else:
                 x_axis.append(key)
-                y_axis.append(value/1000000)
+                y_axis.append("{:,}".format(value/scale))
                 count += 1
         return x_axis, y_axis
 
@@ -50,7 +50,7 @@ def get_data(dictionary, limit):
 def get_daily(subdir, year, month, emoji):
     """ If you want to visualize data everyday in 1 month, you need to use this 
         [Developer Note]
-            This function is in developing and I don't know how it works """
+            This function is in developing. """
     x_pos, x_axis, y_axis = [], [], []
     for i in range(start, end):
         dir = "dictionary/%s/daily/%04d-%02d-%02d-%s.pkl" % (subdir, year, month, i, subdir)
@@ -60,11 +60,11 @@ def get_daily(subdir, year, month, emoji):
                 if emo == emoji:
                     x_pos.append(i)
                     x_axis.append(emoji)
-                    y_axis.append(data[emo])
+                    y_axis.append("{:,}".format(data[emo]))
     return x_pos, x_axis, y_axis
 
 
-def visualizes_usage(year, month, day, total):
+def visualizes_usage(year, month, day, total, scale=1000000, decimal=1):
     """
         Visualizes top 10 emojis into bar chart.
         [options]
@@ -87,7 +87,22 @@ def visualizes_usage(year, month, day, total):
     12: "December",
     }
 
-    if year == "2016-2017":
+    scale_label = {
+        1: "Times",
+        100: "Hundred Times",
+        1000: "Thousand Times",
+        1000000: "Million Times",
+        1000000000: "Billion Times",
+    }
+
+    decimal_label = {
+        0: "%d",
+        1: "%.1f",
+        2: "%.2f",
+        3: "%.3f",
+    }
+
+    if year == "2016-2018":
         dir = "dictionary/total-usage.pkl"
         title = "Thai top 10 emoji usage on Twitter"
     elif year and not month and not day:
@@ -100,7 +115,7 @@ def visualizes_usage(year, month, day, total):
         dir = "dictionary/usage/daily/%04d-%02d-%02d-usage.pkl" % (year, month, day)
         title = "Thai top 10 emoji usage on Twitter (%d %s %04d)" % (day, month_list[month], year)
     
-    x_axis, y_axis = get_data(dir, 10)
+    x_axis, y_axis = get_data(dir, 10, scale)
 
     x_pos = np.arange(total)
     fig, ax = plt.subplots()
@@ -108,10 +123,10 @@ def visualizes_usage(year, month, day, total):
 
     ax.yaxis.grid(color='navy', linestyle='-', linewidth=0.5, alpha=0.25, zorder= 0)
     ax.get_yaxis().get_major_formatter().set_scientific(False)
-    ax.get_yaxis().set_major_formatter(FormatStrFormatter('%.1f'))
+    ax.get_yaxis().set_major_formatter(FormatStrFormatter(decimal_label[decimal]))
 
     plt.xlabel('Emoji')
-    plt.ylabel('Frequency (Million Times)')
+    plt.ylabel('Frequency (%s)' % scale_label[scale])
     plt.title(title)
     plt.xticks(x_pos, x_axis)
 
@@ -131,7 +146,7 @@ def visualizes_behavior(top_usage):
 
     x_axis, year, month, day, total = top_usage
 
-    if year == "2016-2017":
+    if year == "2016-2018":
         dir = "dictionary/total-behavior.pkl"
     elif year and not month and not day:
         dir = "dictionary/usage/annually/%04d-behavior.pkl" % year
@@ -184,13 +199,16 @@ def happiness_index(year, month):
 
     if year == 2016:
         start = 3
-        end = 13
+        stop = 13
+    elif year == 2018:
+        start = 1
+        stop = 8
     else:
         start = 1
-        end = 11
+        stop = 13
 
     if not month:
-        for i in range(start, end):
+        for i in range(start, stop):
             dir = "dictionary/emotion/monthly/%02d-%02d-emotion.pkl" % (year, i)
             with open(dir, 'rb') as f:
                 data = pickle.load(f)
@@ -199,7 +217,8 @@ def happiness_index(year, month):
                 sad.append(data['ไม่มีความสุข'])
     
     else:
-        for i in range(1, 32):
+        total_days = monthrange(year, month)[1]
+        for i in range(1, total_days+1):
             dir = "dictionary/emotion/monthly/%02d-%02d-emotion.pkl" % (year, month)
             with open(dir, 'rb') as f:
                 data = pickle.load(f)
@@ -228,19 +247,35 @@ def happiness_index(year, month):
 def main():
     """ Program start here """
 
-    toptotal = visualizes_usage("2016-2017", False, False, 10)  #Get total usage graph
-    visualizes_behavior(toptotal)                               #Get behavior graph
+    # Get all time top 10 emoji usage 
+    toptotal = visualizes_usage("2016-2018", False, False, 10)  
+    # Get all time typing behavior
+    visualizes_behavior(toptotal)
 
-    visualizes_usage(2017, False, False, 10)                    #Get 2017 usage graph
-    visualizes_usage(2016, False, False, 10)                    #Get 2016 usage graph
+    # Get top 10 emoji usage by year
+    visualizes_usage(2018, False, False, 10)
+    visualizes_usage(2017, False, False, 10)
+    visualizes_usage(2016, False, False, 10)
 
-    visualizes_usage(2017, 1, 1, 10)                            #Get 1 jan 2017 usage graph
-    visualizes_usage(2017, 2, 14, 10)                           #Get 14 feb 2017 usage graph
-    visualizes_usage(2017, 4, 13, 10)                           #Get 13 apr 2017 usage graph
-    visualizes_usage(2017, 10, False, 10)                       #Get oct 2017 usage graph
+    # Get top 10 emoji usage by month
+    visualizes_usage(2017, 1, False, 10, 1000,0)
+    visualizes_usage(2017, 2, False, 10, 1000,0)
+    visualizes_usage(2017, 4, False, 10, 1000,0)
+    visualizes_usage(2017, 10, False, 10, 1000000,0)
 
-    happiness_index(2017, False)                                #Get happiness index graph in 2017
-    happiness_index(2016, False)                                #Get happiness index graph in 2016
+    visualizes_usage(2018, 1, False, 10, 1000,0)
+    visualizes_usage(2018, 2, False, 10, 1000,0)
+    visualizes_usage(2018, 4, False, 10, 1000,0)
+
+    # Get top 10 emoji usage by day
+    visualizes_usage(2017, 1, 1, 10, 1, 0)      #Get 1 jan 2017 usage graph
+    visualizes_usage(2017, 2, 14, 10, 1, 0)     #Get 14 feb 2017 usage graph
+    visualizes_usage(2017, 4, 13, 10, 1, 0)     #Get 13 apr 2017 usage graph
+
+    # Get happiness index by year
+    happiness_index(2018, False)
+    happiness_index(2017, False)
+    happiness_index(2016, False)
 
     plt.show()
 
